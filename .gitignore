@@ -2,3 +2,5 @@ src.html
 test-live.html
 mock-server.py
 regress.py
+live_e2e.py
+rank.py
