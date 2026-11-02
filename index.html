@@ -188,7 +188,7 @@ function final(d,rv){
  return{pc,total:done?G/M*100:null,flags:s.flags,done}}
 
 /* ---------- live backend (Google Apps Script URL; empty = copy-code mode) ---------- */
-const API="";
+let API="";
 const FORM="https://formsubmit.co/ajax/e1677feea9dbac8776bfcfb40fe9257c"; // emails each result to the owner; used when API is empty
 const hash=s=>{let h=5381;for(const ch of s)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(36)+s.length.toString(36)};
 const post=(o,cors=true)=>fetch(API,{method:"POST",mode:cors?"cors":"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(o)});
@@ -306,6 +306,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-r]");if(!b
    saveC();render();document.getElementById("rmsg").textContent=j.rows.length+" loaded from server"}).catch(()=>{m.textContent="Could not reach the server."})}
  else if(b.dataset.r==="del"){CANDS.splice(+b.dataset.ix,1);saveC();render()}});
 document.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.r==="mark"){const c=CANDS[+t.dataset.ix];c.rv[+t.dataset.i]=t.value;saveC();if(API&&KEYV&&c.id){MARKERR="";post({action:"mark",key:KEYV,id:c.id,marks:c.rv}).then(r=>r.json()).then(j=>{if(!j.ok){MARKERR="Your mark was not saved to the server (kept in this browser). Check the review key.";render()}}).catch(()=>{MARKERR="Your mark was not saved to the server (kept in this browser).";render()})}render()}});
+fetch("config.json?"+Date.now()).then(r=>r.json()).then(j=>{if(j&&typeof j.api==="string"&&j.api){API=j.api;if(location.hash==="#review")render()}}).catch(()=>{});
 window.addEventListener("hashchange",()=>render(true));
 render(true);
 </script>
