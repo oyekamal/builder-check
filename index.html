@@ -205,9 +205,10 @@ async function send(){
  if(!API){S.sent="none";save();paintStatus();return}
  if(sending)return;sending=true;
  S.sent="wait";save();paintStatus();
- const o={action:"submit",id:hash(S.n.trim().toLowerCase()+"|"+S.c.trim().toLowerCase()),name:S.n.trim(),contact:S.c.trim(),region:S.r.trim(),mins:JSON.parse(decodeURIComponent(escape(atob(S.code)))).m,code:S.code};
+ const o={action:"submit",id:hash(S.n.trim().toLowerCase()+"|"+S.c.trim().toLowerCase()),name:S.n.trim(),contact:S.c.trim(),region:S.r.trim(),mins:JSON.parse(decodeURIComponent(escape(atob(S.code)))).m,code:S.code,answers:readable(JSON.parse(decodeURIComponent(escape(atob(S.code)))))};
  try{const r=await post(o);const j=await r.json();S.sent=j&&j.ok?"ok":"fail"}
  catch(e){try{await post(o,false);S.sent="sent"}catch(e2){S.sent="fail"}}
+ if(S.sent==="fail"&&FORM){sending=true;return sendForm()}
  sending=false;save();paintStatus()}
 function paintStatus(){const el=document.getElementById("st");if(el){el.textContent=STMSG[S.sent||"none"];el.className=(S.sent==="fail"||S.sent==="sent")?"":"ok"}const cb=document.getElementById("codebox");if(cb)cb.open=S.sent==="fail"||S.sent==="sent"||S.sent==="none"}
 /* ---------- candidate flow ---------- */
