@@ -1,0 +1,293 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>Builder Check</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: one question per screen, an illustrated scene on top, big tappable answers. Reviewer view at #review. */
+:root{--bg:#F4F7F4;--card:#FFFFFF;--ink:#14231E;--mute:#55655D;--line:#D6DFD8;--green:#0F7B5F;--green-ink:#FFFFFF;--sun:#F2C94C;--bad:#B3361F;--soft:#E3F1E9;--skin:#C98B5E;
+--display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;--body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1613;--card:#14211C;--ink:#E8F1EC;--mute:#9DB0A6;--line:#26382F;--green:#3CC39A;--green-ink:#06231A;--sun:#E8B931;--bad:#F08C78;--soft:#173028;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D1613;--card:#14211C;--ink:#E8F1EC;--mute:#9DB0A6;--line:#26382F;--green:#3CC39A;--green-ink:#06231A;--sun:#E8B931;--bad:#F08C78;--soft:#173028;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 var(--body);padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:680px;margin:0 auto}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font:800 15px var(--display);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.bar{flex:1;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);transition:width .3s}
+.step{font-size:14px;color:var(--mute);white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:clip}
+.nav{position:sticky;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);margin:0 -22px -24px;padding:12px 22px calc(12px + env(safe-area-inset-bottom,0px));display:grid;gap:8px}
+.nav p{min-height:1.4em}
+h1:focus,h2:focus{outline:none}
+.scene{background:var(--soft);display:block;width:100%;height:auto;max-height:150px}
+.scene .g{fill:var(--green)}.scene .s{fill:var(--sun)}.scene .i{fill:var(--ink)}.scene .w{fill:var(--card)}.scene .k{fill:var(--skin)}.scene .m{fill:var(--mute)}
+.scene .l{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round}.scene .lg{fill:none;stroke:var(--green);stroke-width:5;stroke-linecap:round}
+.body{padding:22px 22px 24px;display:flex;flex-direction:column;gap:16px}
+h1,h2{font-family:var(--display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:34px;font-weight:800}h2{font-size:25px;font-weight:800}
+p{margin:0}.mute{color:var(--mute)}.small{font-size:14px}
+.quote{border-left:5px solid var(--sun);padding:6px 0 6px 14px;font-size:18px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.opt:hover{border-color:var(--green)}
+.opt[aria-pressed="true"]{border-color:var(--green);background:var(--soft)}
+.opt b{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font:700 14px var(--display)}
+.opt[aria-pressed="true"] b{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.row{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.btn{font:700 17px var(--body);padding:13px 24px;border-radius:99px;border:2px solid var(--green);background:var(--green);color:var(--green-ink);cursor:pointer}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--green)}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+label.f{display:grid;gap:6px;font-weight:700}
+input[type=text],textarea,select{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:11px 13px;width:100%}
+textarea{min-height:130px;resize:vertical}
+.chat{background:#101A17;color:#DDEBE4;border-radius:14px;padding:16px;font:14px/1.6 ui-monospace,Menlo,Consolas,monospace;display:grid;gap:4px}
+.chat .who{color:#7BE0BB;font-weight:700}
+.tf{display:grid;gap:8px;padding:14px;border:2px solid var(--line);border-radius:14px}
+.tf .q{font-weight:700}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{flex:1 1 90px;font:inherit;padding:9px 10px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--green);background:var(--soft);font-weight:700}
+.count{font-weight:700;color:var(--green)}
+.code{font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;min-height:120px}
+.ok{color:var(--green);font-weight:700}
+/* reviewer */
+.cand{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:18px;display:grid;gap:12px;margin-top:14px}
+.rank{font:800 28px var(--display);color:var(--green)}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.dim{font-size:13px}.dim .t{height:8px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:3px}.dim .t i{display:block;height:100%;background:var(--green)}
+.dim.low .t i{background:var(--bad)}
+.flag{display:inline-block;background:var(--bad);color:var(--card);border-radius:8px;padding:2px 9px;font-size:13px;margin:0 6px 6px 0}
+.ans{background:var(--bg);border-radius:12px;padding:12px 14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.rub{font-size:13px;color:var(--mute)}
+.mini{width:auto;padding:6px 10px}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+@media (max-width:480px){h1{font-size:28px}.body{padding:18px 16px 20px}.nav{margin:0 -16px -20px;padding-left:16px;padding-right:16px}}
+</style>
+<div class="wrap" id="app"></div>
+<script>
+/* ---------- content ---------- */
+const DIMS={ai:"AI know-how",ask:"Asks good questions",cando:"Can-do",humble:"Humble",service:"Wants to help",neutral:"Keeps politics out"};
+const TF=[
+ ["In a long chat with an agent, it can lose track of instructions you gave at the start.",true],
+ ["It is fine to paste a child’s name and exam marks into any free AI tool to get quick help.",false],
+ ["An agent that can edit files and run commands can also change things you did not ask it to change.",true],
+ ["Claude re-reading its own code is as reliable a check as running the code on the real device.",false]];
+const CAL={ok:{55:1,75:2,95:3},no:{55:0,75:-1,95:-3}};
+const SC={
+ s1:{scene:"voice",t:"A voice note at 8:10 am",q:"“Sir, lesson 4 will not open. Nothing happens. The children are waiting.”",ask:"What do you do first?",o:[
+  ["Call her, ask which phone it is and what she sees, then try the lesson on a similar cheap phone before touching any code.",{ask:2,cando:1,service:1}],
+  ["Check the dashboard for other users with the same error before you reply to her.",{ask:1}],
+  ["Tell her to restart the phone and clear the app data, then try again.",{cando:1,service:1}],
+  ["Ask her for a photo of the screen, then ask your agent to find and fix the likely cause.",{ask:1,cando:1}]]},
+ s2:{scene:"agent",t:"Your agent reports back",chat:true,ask:"What do you do?",o:[
+  ["Run the tests again yourself to confirm they pass, then ship.",{cando:1}],
+  ["Open the changes, check everything the agent touched besides the fix, ask it to explain anything unexpected, and test on a real phone with no internet.",{ai:2,cando:1,humble:1}],
+  ["Ask the agent to double-check its own work and report back.",{cando:1}],
+  ["Send it to the teacher who reported the problem and ask her to try it.",{cando:1,service:1}]]},
+ s3:{scene:"school",t:"In the principal’s office",q:"“How do you teach Grade 2 children to read?” You do not know.",ask:"What do you say?",o:[
+  ["Say you are not sure, give your best guess, and say it needs checking.",{humble:1}],
+  ["Say you will find out and send her a clear answer by tomorrow.",{humble:1,cando:1}],
+  ["Give the answer Claude gives you, and mention that it came from Claude.",{}],
+  ["Say you do not know, and ask to sit in a Grade 2 lesson and learn from the teacher first.",{humble:2,ask:1,service:1,cando:1}]]},
+ s4:{scene:"talk",t:"The staff group chat",q:"Teachers are arguing hard about which party is to blame for school funding. One asks you to pick a side.",ask:"What do you do?",o:[
+  ["Say you only care about the children, then say which party hurts them most.",{}],
+  ["Say you understand why people are upset about funding, and leave it there.",{neutral:1,service:1}],
+  ["Say you will not take a side. Ask what would help her classroom this week.",{neutral:2,service:2}],
+  ["Say you are busy, mute the chat, and answer teachers one by one instead.",{neutral:1,service:1}]]},
+ s5:{scene:"clock",t:"Friday, 4 pm",q:"A teacher in a village school needs a printable worksheet for Monday. No designer, no budget, weak internet.",ask:"What do you do?",o:[
+  ["Tell her you cannot finish by Monday, and offer a simpler version by Wednesday.",{service:1}],
+  ["Send her a short worksheet from your agent today, unchecked, so she has something, and fix it next week.",{cando:1,service:1}],
+  ["Ask what the lesson needs, draft a plain low-ink printable with your agent, check it yourself, send it as a small file, and follow up on Monday.",{cando:2,service:2,ai:1,ask:1}],
+  ["Build a full interactive version over the weekend so she has something polished.",{cando:1}]]}};
+const PICK=[
+ ["Can I just rewrite it for you? What do you want it to say?",0],
+ ["Is this because the curriculum changed again without asking teachers?",-2],
+ ["Which part did the children get stuck on? Can you show me one child’s page?",2],
+ ["Have you tried reading the instructions out loud to them first?",-1],
+ ["Was everyone paying attention in class that day?",-1],
+ ["What did the children do or say when they got stuck?",2],
+ ["What was the goal of the lesson, and how did you know it did not work?",1],
+ ["Is it the pictures, the words or the instructions that confuse them?",1]];
+const POLITICAL_PICK=1;
+const WR=[
+ {h:"Write to your agent",p:"You have a coding agent. Task: “Make lesson 4 load without internet on a cheap Android phone.” Write the first message you would send it, exactly as you would send it. Write it yourself, without AI.",scene:"write"},
+ {h:"A time you were wrong",p:"Tell us about one time you were wrong about something. When was it, what was it, and what did you do next? Include one detail only you would know.",scene:"board"},
+ {h:"Someone you helped",p:"Tell us about something you built or did for someone who was not paying you. Who was it for, and how do you know it helped? Include a date or a name (a first name is fine).",scene:"hands"}];
+const RUB=[
+ "3 = states the goal, the limits (cheap phone, size, offline) and what “done” looks like or how to prove it. 2 = two of those. 1 = one. 0 = a bare one-liner.",
+ "3 = a specific moment, owns it with no blame, names a real change. 2 = specific, vague change. 1 = generic (“I work too hard”). 0 = no real mistake or blames others.",
+ "3 = a real person, effort without pay, and evidence it helped. 2 = real help, weak evidence. 1 = general wish to help. 0 = nothing concrete."];
+const REV=[["ai","W1 · Brief to the agent"],["humble","W2 · Being wrong"],["service","W3 · Helping others"]];
+
+/* ---------- scenes (inline SVG, 320x120) ---------- */
+const P=(x,c="g")=>`<circle class="k" cx="${x}" cy="46" r="15"/><path class="${c}" d="M${x-30} 116q0-42 30-42t30 42z"/>`;
+const SCENES={
+ voice:`<rect class="i" x="46" y="12" width="54" height="96" rx="10"/><rect class="w" x="51" y="22" width="44" height="66" rx="4"/><rect class="g" x="57" y="48" width="5" height="14"/><rect class="g" x="66" y="40" width="5" height="30"/><rect class="g" x="75" y="52" width="5" height="10"/><rect class="g" x="84" y="44" width="5" height="22"/><path class="l" d="M114 48q12 10 0 22M126 40q20 18 0 40"/>${P(238)}`,
+ agent:`<rect class="i" x="96" y="20" width="76" height="62" rx="14"/><circle class="s" cx="120" cy="50" r="8"/><circle class="s" cx="148" cy="50" r="8"/><rect class="s" x="118" y="66" width="32" height="5" rx="2"/><rect class="i" x="130" y="8" width="8" height="14"/><circle class="g" cx="134" cy="8" r="6"/><rect class="i" x="110" y="84" width="48" height="26" rx="8"/><rect class="w" x="198" y="22" width="86" height="82" rx="8"/><path class="lg" d="M210 42l6 6 10-12M210 66l6 6 10-12M210 90l6 6 10-12"/><rect class="m" x="234" y="40" width="40" height="5" rx="2"/><rect class="m" x="234" y="64" width="40" height="5" rx="2"/><rect class="m" x="234" y="88" width="30" height="5" rx="2"/>`,
+ school:`<rect class="g" x="86" y="46" width="148" height="64"/><path class="i" d="M76 48 160 14l84 34z"/><rect class="s" x="104" y="64" width="22" height="22"/><rect class="s" x="194" y="64" width="22" height="22"/><rect class="i" x="146" y="70" width="28" height="40"/><rect class="i" x="158" y="0" width="3" height="16"/><path class="s" d="M161 2h22l-6 6 6 6h-22z"/><circle class="g" cx="40" cy="80" r="22"/><rect class="i" x="37" y="90" width="6" height="22"/><circle class="g" cx="284" cy="86" r="18"/><rect class="i" x="281" y="94" width="6" height="18"/>`,
+ talk:`<path class="g" d="M40 16h120a12 12 0 0 1 12 12v32a12 12 0 0 1-12 12H88l-24 20V72H40a12 12 0 0 1-12-12V28A12 12 0 0 1 40 16z"/><path class="s" d="M160 52h120a12 12 0 0 1 12 12v32a12 12 0 0 1-12 12h-24v16l-24-16H160a12 12 0 0 1-12-12V64a12 12 0 0 1 12-12z" transform="translate(-4 -8)"/><rect class="w" x="48" y="32" width="96" height="6" rx="3"/><rect class="w" x="48" y="46" width="60" height="6" rx="3"/><rect class="i" x="168" y="52" width="96" height="6" rx="3"/><rect class="i" x="168" y="66" width="70" height="6" rx="3"/>`,
+ clock:`<circle class="w" cx="86" cy="60" r="46"/><circle class="l" cx="86" cy="60" r="46"/><path class="l" d="M86 60V30M86 60l22 14"/><rect class="w" x="168" y="40" width="108" height="50" rx="8"/><rect class="i" x="168" y="40" width="108" height="50" rx="8" style="fill:none;stroke:var(--ink);stroke-width:4"/><rect class="w" x="186" y="14" width="72" height="44"/><rect class="m" x="196" y="24" width="52" height="5" rx="2"/><rect class="m" x="196" y="36" width="40" height="5" rx="2"/><rect class="s" x="186" y="72" width="72" height="30"/><rect class="m" x="196" y="82" width="52" height="5" rx="2"/>`,
+ write:`<rect class="w" x="60" y="14" width="110" height="94" rx="8"/><rect class="m" x="76" y="32" width="70" height="6" rx="3"/><rect class="m" x="76" y="48" width="78" height="6" rx="3"/><rect class="m" x="76" y="64" width="54" height="6" rx="3"/><path class="s" d="M200 96 262 34l14 14-62 62-20 6z"/><path class="i" d="M200 96l14 14-20 6z"/>`,
+ board:`<rect class="g" x="70" y="12" width="180" height="76" rx="6"/><text x="160" y="68" text-anchor="middle" font-size="52" font-weight="800" class="w" font-family="sans-serif">?</text><rect class="i" x="90" y="92" width="140" height="6"/><rect class="i" x="100" y="98" width="6" height="18"/><rect class="i" x="214" y="98" width="6" height="18"/>`,
+ hands:`<circle class="s" cx="160" cy="62" r="40"/><path class="g" d="M160 84c-30-18-30-38-14-38 8 0 14 6 14 6s6-6 14-6c16 0 16 20-14 38z"/><path class="l" d="M80 100q20-30 50-22M240 100q-20-30-50-22"/>`,
+ hello:`<circle class="s" cx="250" cy="34" r="22"/><rect class="g" x="70" y="62" width="90" height="46" rx="4"/><rect class="i" x="80" y="40" width="70" height="22" rx="3"/><rect class="s" x="100" y="22" width="60" height="18" rx="3"/>`,
+ done:`<circle class="g" cx="160" cy="60" r="46"/><path class="l" style="stroke:var(--green-ink)" d="M138 62l16 16 30-34"/>`};
+const scene=n=>`<svg class="scene" viewBox="0 0 320 120" role="img" aria-label="Illustration" preserveAspectRatio="xMidYMid meet">${SCENES[n]}</svg>`;
+
+/* ---------- state ---------- */
+const STEPS=[{k:"intro"},{k:"sc",id:"s1"},{k:"sc",id:"s2"},{k:"tf"},{k:"sc",id:"s3"},{k:"sc",id:"s4"},{k:"sc",id:"s5"},{k:"pick"},{k:"wr",i:0},{k:"wr",i:1},{k:"wr",i:2},{k:"end"},{k:"done"}];
+const shuf=n=>{const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const fresh=()=>({sent:"",ord:{s1:shuf(4),s2:shuf(4),s3:shuf(4),s4:shuf(4),s5:shuf(4),pick:shuf(8)},i:0,n:"",c:"",r:"",tf:TF.map(()=>[null,null]),sc:{},pk:[],w:["","",""],ai:"",an:"",t0:null,code:""});
+let S=fresh();
+const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const put=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+try{const x=JSON.parse(get("fsb-state")||"null");if(x&&x.tf)S=Object.assign(fresh(),x)}catch(e){}
+if(!S.ord)S.ord=fresh().ord;
+const save=()=>put("fsb-state",JSON.stringify(S));
+const app=document.getElementById("app");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
+
+/* ---------- scoring (shared by candidate finish and reviewer) ---------- */
+function score(d){
+ const g={},m={};Object.keys(DIMS).forEach(k=>{g[k]=0;m[k]=0});
+ let cal=0,hi=0;
+ TF.forEach((q,i)=>{const[a,c]=d.tf[i];const ok=a===q[1];if(ok)g.ai++;m.ai++;cal+=CAL[ok?"ok":"no"][c];if(!ok&&c===95)hi++});
+ g.humble+=(cal+12)/24*4;m.humble+=4;
+ Object.keys(SC).forEach(id=>{const o=SC[id].o;const pick=o[d.sc[id]]?o[d.sc[id]][1]:{};
+  Object.keys(DIMS).forEach(k=>{m[k]+=Math.max(...o.map(x=>x[1][k]||0));g[k]+=pick[k]||0})});
+ const ps=d.pk.reduce((s,i)=>s+PICK[i][1],0);g.ask+=Math.max(0,ps);m.ask+=5;
+ const pol=d.pk.includes(POLITICAL_PICK);g.neutral+=pol?0:1;m.neutral+=1;
+ const flags=[];
+ if(d.sc.s2===0)flags.push("Would ship without inspecting the changes");
+ if(hi>=2)flags.push("Sure of wrong facts ("+hi+")");
+ if(pol)flags.push("Picked a political question");
+ if(d.sc.s4===0)flags.push("Took a political side");
+ if(d.sc.s3===2)flags.push("Would pass on an AI answer unchecked");
+ if(d.w.some(x=>x.trim().length<60))flags.push("Very short written answer");
+ if(d.w.some(x=>new Set(x.toLowerCase().replace(/\s/g,"")).size<8))flags.push("Written answer looks padded");
+ return{g,m,flags,hi}}
+function final(d,rv){
+ const s=score(d);const g={...s.g},m={...s.m};
+ REV.forEach(([k],i)=>{const v=rv&&rv[i];if(v!==""&&v!=null){g[k]+=+v;m[k]+=3}});
+ const pc={};let G=0,M=0;Object.keys(DIMS).forEach(k=>{pc[k]=m[k]?g[k]/m[k]*100:0;G+=g[k];M+=m[k]});
+ const done=!!rv&&rv.every(v=>v!==""&&v!=null);
+ return{pc,total:done?G/M*100:null,flags:s.flags,done}}
+
+/* ---------- live backend (Google Apps Script URL; empty = copy-code mode) ---------- */
+const API="";
+const hash=s=>{let h=5381;for(const ch of s)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(36)+s.length.toString(36)};
+const post=(o,cors=true)=>fetch(API,{method:"POST",mode:cors?"cors":"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(o)});
+const STMSG={ok:"Your answers were sent. Thank you. You can close this page.",sent:"Your answers were sent. Thank you. You can close this page.",fail:"We could not send your answers automatically. Please copy the code below and send it to the person who invited you.",none:"Copy the code below and send it to the person who invited you. It holds your answers.",wait:"Sending your answers…"};
+let NAVT=0;let sending=false;
+async function send(){
+ if(!API){S.sent="none";save();return}
+ if(sending)return;sending=true;
+ S.sent="wait";save();paintStatus();
+ const o={action:"submit",id:hash(S.n.trim().toLowerCase()+"|"+S.c.trim().toLowerCase()),name:S.n.trim(),contact:S.c.trim(),region:S.r.trim(),mins:JSON.parse(decodeURIComponent(escape(atob(S.code)))).m,code:S.code};
+ try{const r=await post(o);const j=await r.json();S.sent=j&&j.ok?"ok":"fail"}
+ catch(e){try{await post(o,false);S.sent="sent"}catch(e2){S.sent="fail"}}
+ sending=false;save();paintStatus()}
+function paintStatus(){const el=document.getElementById("st");if(el){el.textContent=STMSG[S.sent||"none"];el.className=S.sent==="fail"?"":"ok"}const cb=document.getElementById("codebox");if(cb)cb.open=S.sent==="fail"||S.sent==="none"}
+/* ---------- candidate flow ---------- */
+const ready=()=>{const s=STEPS[S.i];
+ if(s.k==="intro")return S.n.trim()&&S.c.trim();
+ if(s.k==="sc")return S.sc[s.id]!=null;
+ if(s.k==="tf")return S.tf.every(([a,c])=>a!=null&&c!=null);
+ if(s.k==="pick")return S.pk.length===3;
+ if(s.k==="wr")return S.w[s.i].trim().length>=60;
+ if(s.k==="end")return !!S.ai;
+ return true};
+const hintText=()=>{if(ready())return"";const s=STEPS[S.i];
+ if(s.k==="intro")return"Add your name and an email or WhatsApp number to start.";
+ if(s.k==="sc")return"Choose one answer to continue.";
+ if(s.k==="tf"){const n=S.tf.filter(([a,c])=>a!=null&&c!=null).length;return"Each fact needs two taps: True or False, then how sure you are. "+n+"/4 done."}
+ if(s.k==="pick")return"Choose exactly 3 questions ("+S.pk.length+"/3).";
+ if(s.k==="wr")return"Write "+Math.max(0,60-S.w[s.i].trim().length)+" more characters to continue.";
+ if(s.k==="end")return"Choose one option above.";return""};
+function shell(sc,inner,back=true){
+ const last=STEPS.length-2;
+ return `<div class="top"><span class="brand">Builder Check</span><div class="bar"><i style="width:${Math.min(100,S.i/last*100)}%"></i></div><span class="step">${S.i}/${last}</span></div>
+ <div class="card">${scene(sc)}<div class="body">${inner}<div class="nav"><p class="small mute" id="hint" role="status">${hintText()}</p><div class="row">${back&&S.i>0?'<button class="btn ghost" data-a="back" aria-label="Previous screen">Back</button>':'<span></span>'}<button class="btn" data-a="next" id="next" ${ready()?"":"disabled"}>${STEPS[S.i].k==="end"?"Finish":"Next"}</button></div></div></div></div>`}
+function view(){
+ if(location.hash==="#review")return reviewView();
+ const s=STEPS[S.i];let h="";
+ if(s.k==="intro")h=shell("school",`<h1>Can you build for a classroom?</h1>
+  <p>This takes about 15 to 20 minutes. There are short scenarios, a few quick facts, and three short written answers. No trick questions. We want to see how you would really act.</p>
+  <p class="mute">Write the first written answer yourself, with no AI. You may use AI for the other two if you wish. We ask about it at the end. Write in English or Urdu.</p>
+  ${(()=>{try{localStorage.setItem("fsb-t","1");return""}catch(e){return'<p class="small" style="color:var(--bad)">This browser is not saving progress. Please do not refresh or close the page until you finish.</p>'}})()}
+  <label class="f">Your name<input type="text" id="n" autocomplete="name" value="${esc(S.n)}"></label>
+  <label class="f">Email or WhatsApp number<input type="text" id="c" autocomplete="email" value="${esc(S.c)}"></label>
+  <label class="f">City or region (optional)<input type="text" id="r" value="${esc(S.r)}"></label>`,false);
+ else if(s.k==="sc"){const q=SC[s.id];
+  h=shell(q.scene,`<h2>${q.t}</h2>${q.q?`<p class="quote">${q.q}</p>`:""}${q.chat?`<div class="chat"><span class="who">agent</span><span>✅ Offline loading fixed for Lesson 4.</span><span>✅ All 14 tests pass.</span><span>Files changed: 3.</span><span>Note: removed 6 flaky tests that were slow.</span></div>`:""}<p><b>${q.ask}</b></p>
+  <div class="opts">${S.ord[s.id].map((oi,pos)=>`<button class="opt" data-a="sc" data-id="${s.id}" data-i="${oi}" aria-pressed="${S.sc[s.id]===oi}"><b>${"ABCD"[pos]}</b><span>${q.o[oi][0]}</span></button>`).join("")}</div>`)}
+ else if(s.k==="tf")h=shell("agent",`<h2>Quick facts about AI</h2><p class="mute">For each one, choose True or False, then say how sure you are.</p>
+  ${TF.map((q,i)=>`<div class="tf"><div class="q">${i+1}. ${q[0]}</div><div class="small mute">Step 1: is it true or false?</div><div class="seg">${[["True",true],["False",false]].map(([l,v])=>`<button data-a="tfa" data-i="${i}" data-v="${v}" aria-pressed="${S.tf[i][0]===v}">${l}</button>`).join("")}</div>
+  <div class="small mute">Step 2: how sure are you?</div><div class="seg">${[[55,"Guessing"],[75,"Fairly sure"],[95,"Certain"]].map(([v,l])=>`<button data-a="tfc" data-i="${i}" data-v="${v}" aria-pressed="${S.tf[i][1]===v}">${l}</button>`).join("")}</div></div>`).join("")}`);
+ else if(s.k==="pick")h=shell("board",`<h2>Three questions for the teacher</h2><p class="quote">A teacher says: “Worksheet 3 is confusing. The children do not understand it.”</p><p><b>You can ask her three questions. Choose the three you would ask.</b> <span class="count" id="cnt">${S.pk.length}/3</span></p>
+  <div class="opts">${S.ord.pick.map((qi,pos)=>`<button class="opt" data-a="pk" data-i="${qi}" aria-pressed="${S.pk.includes(qi)}"><b>${pos+1}</b><span>${PICK[qi][0]}</span></button>`).join("")}</div>`);
+ else if(s.k==="wr"){const w=WR[s.i];h=shell(w.scene,`<h2>${w.h}</h2><p>${w.p}</p><textarea id="w" dir="auto" maxlength="900" placeholder="Write here. A few sentences is enough.">${esc(S.w[s.i])}</textarea><p class="small mute"><span id="wl">${S.w[s.i].length}</span>/900 · at least 60 characters</p>`)}
+ else if(s.k==="end")h=shell("hands",`<h2>Last one</h2><label class="f">Did you use AI for any of your answers?<select id="ai"><option value="">Choose one</option>${[["no","No, all mine"],["words","Yes, for wording"],["ideas","Yes, for ideas and wording"]].map(([v,l])=>`<option value="${v}" ${S.ai===v?"selected":""}>${l}</option>`).join("")}</select></label>
+  <label class="f">If yes, how did you check what it gave you? (optional)<textarea id="an" dir="auto" maxlength="400" style="min-height:90px">${esc(S.an)}</textarea></label>`);
+ else{if(!S.code)S.code=enc({v:1,n:S.n.trim(),c:S.c.trim(),r:S.r.trim(),m:Math.round((Date.now()-(S.t0||Date.now()))/60000),tf:S.tf,sc:S.sc,pk:S.pk,w:S.w,ai:S.ai,an:S.an});save();
+  h=`<div class="card">${scene("done")}<div class="body"><h2>Thank you, ${esc(S.n.trim().split(" ")[0])}</h2><p id="st" role="status"></p><details id="codebox"><summary>Your backup code</summary><textarea class="code" id="code" readonly>${S.code}</textarea><div class="row"><button class="btn" data-a="copy" id="cp">Copy code</button></div></details><div class="row"><span></span><button class="btn ghost" data-a="reset">Start over</button></div></div></div>`;setTimeout(()=>{if(!S.sent||S.sent==="fail"||(S.sent==="wait"&&!sending))send();else paintStatus()},0)}
+ return h}
+function render(top){app.innerHTML=view();if(top){window.scrollTo(0,0);const h=app.querySelector("h1,h2");if(h){h.tabIndex=-1;h.focus({preventScroll:true})}}}
+function refreshNext(){const b=document.getElementById("next");if(b)b.disabled=!ready();const h=document.getElementById("hint");if(h)h.textContent=hintText()}
+app.addEventListener("input",e=>{const t=e.target,s=STEPS[S.i];
+ if(t.id==="n")S.n=t.value;else if(t.id==="c")S.c=t.value;else if(t.id==="r")S.r=t.value;
+ else if(t.id==="w"){S.w[s.i]=t.value;document.getElementById("wl").textContent=t.value.length}
+ else if(t.id==="an")S.an=t.value;else if(t.id==="ai")S.ai=t.value;else return;
+ save();refreshNext()});
+app.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const a=b.dataset.a,i=+b.dataset.i;
+ if((a==="next"||a==="back")){if(Date.now()-NAVT<450)return;NAVT=Date.now()}
+ if(a==="next"){if(!S.t0)S.t0=Date.now();if(STEPS[S.i].k==="end")S.code="";S.i++;save();render(true);return}
+ if(a==="back"){S.i--;save();render(true);return}
+ if(a==="sc")S.sc[b.dataset.id]=i;
+ else if(a==="tfa")S.tf[i][0]=b.dataset.v==="true";
+ else if(a==="tfc")S.tf[i][1]=+b.dataset.v;
+ else if(a==="pk"){const j=S.pk.indexOf(i);if(j>=0)S.pk.splice(j,1);else if(S.pk.length<3)S.pk.push(i)}
+ else if(a==="copy"){const ta=document.getElementById("code");ta.select();(navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).then(()=>{b.textContent="Copied"},()=>{ta.select();b.textContent="Select the code and copy it"});return}
+ else if(a==="reset"){if(b.dataset.sure){S=fresh();save();render()}else{b.dataset.sure=1;b.textContent="Tap again to erase";}return}
+ else return;
+ save();
+ if(a==="pk"){document.querySelectorAll('[data-a="pk"]').forEach(x=>x.setAttribute("aria-pressed",S.pk.includes(+x.dataset.i)));document.getElementById("cnt").textContent=S.pk.length+"/3"}
+ else if(a==="sc")document.querySelectorAll('[data-a="sc"]').forEach(x=>x.setAttribute("aria-pressed",+x.dataset.i===S.sc[x.dataset.id]));
+ else if(a==="tfa"||a==="tfc"){document.querySelectorAll(`[data-a="${a}"][data-i="${i}"]`).forEach(x=>x.setAttribute("aria-pressed",String(a==="tfa"?(S.tf[i][0]===(x.dataset.v==="true")):(S.tf[i][1]===+x.dataset.v))))}
+ else{render()}
+ refreshNext()});
+
+/* ---------- reviewer (#review) ---------- */
+let KEYV="";let CANDS=[];try{CANDS=JSON.parse(get("fsb-review")||"[]")}catch(e){}
+const saveC=()=>put("fsb-review",JSON.stringify(CANDS));
+function reviewView(){
+ const rows=CANDS.map((c,ix)=>{try{const d=dec(c.code);if(d.v!==1||!Array.isArray(d.tf)||d.tf.length!==TF.length||!Array.isArray(d.pk)||!Array.isArray(d.w)||d.w.length!==3)return null;return{ix,d,c,f:final(d,c.rv)}}catch(e){return null}}).filter(Boolean).sort((a,b)=>(b.f.total??-1)-(a.f.total??-1));
+ return `<div class="top"><span class="brand">Builder Check · Review</span></div>
+ <div class="card"><div class="body"><h2>Paste candidate codes</h2><p class="mute">One code per line. Mark the three written answers for each candidate. Names are hidden until you open them. A candidate is ranked only when all three marks are in.</p>
+ ${API?`<label class="f">Review key<input type="text" id="rkey" autocomplete="off" placeholder="the key you set in the script"></label><div class="row"><button class="btn" data-r="load">Load results from server</button><span class="small mute" id="rmsg"></span></div><hr style="border:0;border-top:1px solid var(--line);width:100%">`:""}<textarea id="paste" style="min-height:90px" placeholder="Or paste codes here"></textarea><div class="row"><button class="btn" data-r="add">Add candidates</button><span class="small mute">${rows.length} loaded · saved in this browser</span></div></div></div>
+ ${rows.map((r,k)=>cand(r,k)).join("")}`}
+function cand(r,k){const{d,c,f}=r,s=score(d);
+ const h0=d.w[0],hint=[["phone limits",/phone|android|cheap|low|mb|gb/i],["offline",/offline|internet|connection/i],["proof of done",/test|prove|check|screenshot|done|success/i]].map(([l,r])=>(r.test(h0)?"✓ ":"✗ ")+l).join("  ");
+ return `<div class="cand"><div class="row"><div><span class="rank">${f.done?"#"+(k+1):"–"}</span> <b>Candidate ${r.ix+1}</b> <span class="mute small">${c.ts?new Date(c.ts).toLocaleDateString()+" · ":""}${d.m} min · AI use: ${esc(d.ai)}</span><details class="small"><summary>Show name (mark first)</summary>${esc(d.n)} · ${esc(d.c)}${d.r?" · "+esc(d.r):""}</details></div><div>${f.done?`<b style="font-size:22px">${Math.round(f.total)}</b><span class="mute small">/100</span>`:`<span class="mute small">Mark all 3 to rank</span>`}</div></div>
+ <div>${f.flags.map(x=>`<span class="flag">${esc(x)}</span>`).join("")}</div>
+ <div class="dims">${Object.keys(DIMS).map(k2=>`<div class="dim ${f.pc[k2]<50?"low":""}">${DIMS[k2]} · ${Math.round(f.pc[k2])}%<div class="t"><i style="width:${f.pc[k2]}%"></i></div></div>`).join("")}</div>
+ ${REV.map(([key,label],i)=>`<div><div class="row"><b>${label}</b><select class="mini" data-r="mark" data-ix="${r.ix}" data-i="${i}" aria-label="${label} mark"><option value="">Mark</option>${[0,1,2,3].map(v=>`<option value="${v}" ${c.rv&&c.rv[i]===String(v)?"selected":""}>${v}</option>`).join("")}</select></div><div class="ans" dir="auto">${esc(d.w[i])||"(empty)"}</div><div class="rub">${RUB[i]}${i===0?" Keyword hints: "+hint:""}</div></div>`).join("")}
+ ${d.an?`<div class="small"><b>How they checked AI:</b> ${esc(d.an)}</div>`:""}
+ <div><button class="btn ghost mini" data-r="del" data-ix="${r.ix}">Remove</button></div></div>`}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-r]");if(!b||location.hash!=="#review")return;
+ if(b.dataset.r==="add"){const lines=document.getElementById("paste").value.split(/\s+/).filter(Boolean);
+  let bad=0;lines.forEach(l=>{try{const d=dec(l);if(d.v!==1||!Array.isArray(d.tf)||d.tf.length!==TF.length||!Array.isArray(d.pk)||d.w.length!==3)throw 0;if(!CANDS.some(c=>c.code===l))CANDS.push({code:l,rv:["","",""]})}catch(x){bad++}});saveC();render();if(bad){const n=document.createElement("p");n.className="small";n.style.color="var(--bad)";n.textContent=bad+" code(s) were not valid. Ask for the code again.";document.querySelector(".body").appendChild(n)}}
+ else if(b.dataset.r==="load"){KEYV=document.getElementById("rkey").value.trim();const m=document.getElementById("rmsg");m.textContent="Loading…";
+  fetch(API+"?action=list&key="+encodeURIComponent(KEYV)).then(r=>r.json()).then(j=>{if(!j.ok){m.textContent="Wrong key or no access.";return}
+   j.rows.forEach(r=>{let x=CANDS.find(c=>c.code===r.code);if(!x){x={code:r.code,rv:["","",""]};CANDS.push(x)}x.id=r.id;x.ts=r.ts;if(Array.isArray(r.marks)&&r.marks.length===3)x.rv=r.marks.map(String)});
+   saveC();render();document.getElementById("rmsg").textContent=j.rows.length+" loaded from server"}).catch(()=>{m.textContent="Could not reach the server."})}
+ else if(b.dataset.r==="del"){CANDS.splice(+b.dataset.ix,1);saveC();render()}});
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.r==="mark"){const c=CANDS[+t.dataset.ix];c.rv[+t.dataset.i]=t.value;saveC();if(API&&KEYV&&c.id)post({action:"mark",key:KEYV,id:c.id,marks:c.rv}).catch(()=>{});render()}});
+window.addEventListener("hashchange",()=>render(true));
+render(true);
+</script>
+</body></html>
