@@ -80,3 +80,12 @@ function doGet(e) {
     return out_({ ok: false });
   }
 }
+
+// Run this once from the editor (select "demo" in the toolbar, click Run) to see a test row appear.
+// Delete that row afterwards.
+function demo() {
+  const r = doPost({ postData: { contents: JSON.stringify({
+    action: 'submit', id: 'demo1', name: 'Demo Candidate', contact: 'demo@example.com',
+    region: 'Test', mins: 12, code: 'DEMO' }) } });
+  Logger.log(r.getContent());
+}
