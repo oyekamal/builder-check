@@ -151,6 +151,16 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
 const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
 
+/* ---------- readable answers (emails + exports) ---------- */
+const CONFW={55:"guessing",75:"fairly sure",95:"certain"};
+function readable(d){const r={};
+ Object.keys(SC).forEach((id,i)=>{const q=SC[id];r["scenario_"+(i+1)]="["+q.t+"] "+(d.sc[id]!=null?q.o[d.sc[id]][0]:"(no answer)")});
+ TF.forEach((q,i)=>{const[a,c]=d.tf[i];r["fact_"+(i+1)]=(a===true?"True":a===false?"False":"?")+" ("+(CONFW[c]||"?")+") "+(a===q[1]?"CORRECT":"WRONG")+" - "+q[0]});
+ r.teacher_questions_chosen=d.pk.map(i=>PICK[i][0]).join("  |  ");
+ d.w.forEach((w,i)=>{r["written_"+(i+1)+"_"+["brief_to_agent","time_wrong","helped_someone"][i]]=w});
+ r.ai_use=d.ai;r.ai_check_note=d.an||"";
+ const f=final(d,["","",""]);Object.keys(DIMS).forEach(k=>{r["auto_"+k.replace(/ /g,"_")+"_pct"]=Math.round(f.pc[k])});
+ r.flags=f.flags.join("; ");return r}
 /* ---------- scoring (shared by candidate finish and reviewer) ---------- */
 function score(d){
  const g={},m={};Object.keys(DIMS).forEach(k=>{g[k]=0;m[k]=0});
@@ -187,7 +197,7 @@ let NAVT=0;let sending=false;
 async function sendForm(){
  S.sent="wait";save();paintStatus();
  const d=JSON.parse(decodeURIComponent(escape(atob(S.code))));
- const o={_subject:"Builder Check: "+S.n.trim(),_captcha:"false",_template:"table",name:S.n.trim(),contact:S.c.trim(),region:S.r.trim(),minutes:d.m,ai_use:d.ai,backup_code:S.code};
+ const o=Object.assign({_subject:"Builder Check: "+S.n.trim(),_captcha:"false",_template:"table",name:S.n.trim(),contact:S.c.trim(),region:S.r.trim(),minutes:d.m},readable(d),{backup_code:S.code});
  for(let k=0;k<2&&S.sent!=="ok";k++){if(k)await new Promise(r=>setTimeout(r,3000));try{const r=await fetch(FORM,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(o)});const j=await r.json();S.sent=(j&&(j.success===true||j.success==="true"))?"ok":"fail"}catch(e){S.sent="fail"}}
  sending=false;save();paintStatus()}
 async function send(){
