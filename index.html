@@ -179,11 +179,19 @@ function final(d,rv){
 
 /* ---------- live backend (Google Apps Script URL; empty = copy-code mode) ---------- */
 const API="";
+const FORM="https://formsubmit.co/ajax/e1677feea9dbac8776bfcfb40fe9257c"; // emails each result to the owner; used when API is empty
 const hash=s=>{let h=5381;for(const ch of s)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(36)+s.length.toString(36)};
 const post=(o,cors=true)=>fetch(API,{method:"POST",mode:cors?"cors":"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(o)});
 const STMSG={ok:"Your answers were sent. Thank you. You can close this page.",sent:"We could not confirm that your answers arrived. Please also copy the backup code below and send it to the person who invited you.",fail:"We could not send your answers automatically. Please copy the code below and send it to the person who invited you.",none:"Copy the code below and send it to the person who invited you. It holds your answers.",wait:"Sending your answers…"};
 let NAVT=0;let sending=false;
+async function sendForm(){
+ S.sent="wait";save();paintStatus();
+ const d=JSON.parse(decodeURIComponent(escape(atob(S.code))));
+ const o={_subject:"Builder Check: "+S.n.trim(),_captcha:"false",_template:"table",name:S.n.trim(),contact:S.c.trim(),region:S.r.trim(),minutes:d.m,ai_use:d.ai,backup_code:S.code};
+ try{const r=await fetch(FORM,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(o)});const j=await r.json();S.sent=(j&&(j.success===true||j.success==="true"))?"ok":"fail"}catch(e){S.sent="fail"}
+ sending=false;save();paintStatus()}
 async function send(){
+ if(!API&&FORM){if(sending)return;sending=true;return sendForm()}
  if(!API){S.sent="none";save();paintStatus();return}
  if(sending)return;sending=true;
  S.sent="wait";save();paintStatus();
