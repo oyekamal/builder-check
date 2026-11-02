@@ -1,15 +1,18 @@
 // Builder Check backend. Paste into Extensions > Apps Script of a Google spreadsheet.
 // 1) Change REVIEW_KEY. 2) Deploy > New deployment > Web app > Execute as: Me, Who has access: Anyone.
 const REVIEW_KEY = 'CHANGE-THIS-KEY';
+// Leave empty if the script was opened from the spreadsheet itself (Extensions > Apps Script).
+const FILE_ID = '';
 const HEAD = ['id', 'ts', 'name', 'contact', 'region', 'mins', 'code', 'marks'];
 
 function tab_(create) {
-  const book = SpreadsheetApp.getActiveSpreadsheet();
+  const book = FILE_ID ? SpreadsheetApp.openById(FILE_ID) : SpreadsheetApp.getActiveSpreadsheet();
   let t = book.getSheetByName('submissions');
   if (!t && create) {
-    t = book.insertSheet('submissions');
+    const first = book.getSheets()[0];
+    t = (first.getName() === 'Sheet1' && first.getLastRow() <= 1) ? first.setName('submissions') : book.insertSheet('submissions');
     t.getRange('A:H').setNumberFormat('@'); // plain text: keeps 0300..., +92..., and stops =formulas
-    t.appendRow(HEAD);
+    if (t.getLastRow() === 0) t.appendRow(HEAD);
   }
   return t;
 }
