@@ -188,7 +188,7 @@ async function sendForm(){
  S.sent="wait";save();paintStatus();
  const d=JSON.parse(decodeURIComponent(escape(atob(S.code))));
  const o={_subject:"Builder Check: "+S.n.trim(),_captcha:"false",_template:"table",name:S.n.trim(),contact:S.c.trim(),region:S.r.trim(),minutes:d.m,ai_use:d.ai,backup_code:S.code};
- try{const r=await fetch(FORM,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(o)});const j=await r.json();S.sent=(j&&(j.success===true||j.success==="true"))?"ok":"fail"}catch(e){S.sent="fail"}
+ for(let k=0;k<2&&S.sent!=="ok";k++){if(k)await new Promise(r=>setTimeout(r,3000));try{const r=await fetch(FORM,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(o)});const j=await r.json();S.sent=(j&&(j.success===true||j.success==="true"))?"ok":"fail"}catch(e){S.sent="fail"}}
  sending=false;save();paintStatus()}
 async function send(){
  if(!API&&FORM){if(sending)return;sending=true;return sendForm()}
